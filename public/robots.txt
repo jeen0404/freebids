@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /sponsor/
+Disallow: /r/
+
+Sitemap: https://freebids.lol/sitemap.xml
