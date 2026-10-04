@@ -23,7 +23,8 @@ function og() {
 const ROOT = process.cwd();
 const STATIC_OG_FALLBACK = path.resolve(ROOT, 'public', 'og-default.png');
 
-function ogRoute(handler: (req: Request) => Promise<Buffer | null>) {
+// Social cards can stay an hour stale. Pass a shorter cache for images that should track rank.
+function ogRoute(handler: (req: Request) => Promise<Buffer | null>, cacheControl = 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400') {
   return async (req: Request, res: Response) => {
     try {
       const png = await handler(req);
@@ -32,8 +33,7 @@ function ogRoute(handler: (req: Request) => Promise<Buffer | null>) {
         return;
       }
       res.set('Content-Type', 'image/png');
-      // Rendering is the most CPU-heavy route; social crawlers tolerate an hour-old rank.
-      res.set('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
+      res.set('Cache-Control', cacheControl);
       res.send(png);
     } catch (err: any) {
       console.error('[og]', err.message);
@@ -106,6 +106,13 @@ export function createApp() {
     const view = await flagView(String(req.params.slug));
     return view && (await og()).renderFlagOg(view);
   }));
+
+  // Live rank sticker. The image itself is not a visit; the embed's link to /f/:slug is.
+  app.get('/badge/:slug.png', ogRoute(async (req) => {
+    const view = await flagView(String(req.params.slug));
+    if (!view?.verified) return null;
+    return (await og()).renderFlagBadge(view);
+  }, 'public, max-age=120, s-maxage=300, stale-while-revalidate=3600'));
 
   app.get('/og/flag/:slug/story.png', ogRoute(async (req) => {
     const view = await flagView(String(req.params.slug));

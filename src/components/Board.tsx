@@ -71,7 +71,7 @@ export const Board: React.FC<BoardProps> = ({ flags, loading, category, query, o
   return (
     <section id="board" className="min-w-0">
       {body}
-      {sharing && <ShareDialog flag={sharing} from="board" onClose={() => setSharing(null)} />}
+      {sharing && <ShareDialog flag={sharing} board={flags} from="board" onClose={() => setSharing(null)} />}
     </section>
   );
 };

@@ -67,7 +67,43 @@ export function visitsToReachRank(board: FlagView[], rank: number, flagId?: stri
   return rival.visits7d - (current?.visits7d ?? 0) + 1;
 }
 
+/** The listing directly above this one, and the visits still needed to pass it. */
+export function rivalAbove(board: FlagView[], flag: Pick<FlagView, 'id' | 'rank'>): { name: string; visits: number } | null {
+  if (!flag.rank || flag.rank <= 1) return null;
+  const above = board.filter((f) => f.id !== flag.id)[flag.rank - 2];
+  if (!above) return null;
+  const visits = visitsToReachRank(board, flag.rank - 1, flag.id);
+  if (visits <= 0) return null;
+  return { name: above.name, visits };
+}
+
 export function referralUrl(slug: string): string {
   const origin = typeof window === 'undefined' ? '' : window.location.origin;
   return `${origin}/f/${slug}`;
+}
+
+/** CSS size of the embeddable rank badge. The PNG is rendered at 2×. */
+export const BADGE_WIDTH = 320;
+export const BADGE_HEIGHT = 60;
+
+export function badgeImageUrl(slug: string): string {
+  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  return `${origin}/badge/${slug}.png`;
+}
+
+export function badgeAlt(flag: Pick<FlagView, 'rank' | 'visits7d'>): string {
+  const place = flag.rank ? `#${flag.rank} on FreeBids` : 'New on FreeBids';
+  return `${place} · ${formatCount(flag.visits7d)} visit${flag.visits7d === 1 ? '' : 's'} this week`;
+}
+
+function escapeAttr(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/** HTML owners paste onto their site. The link is the referral URL, so a click counts. */
+export function badgeEmbedHtml(flag: Pick<FlagView, 'slug' | 'rank' | 'visits7d'>): string {
+  const href = escapeAttr(referralUrl(flag.slug));
+  const src = escapeAttr(badgeImageUrl(flag.slug));
+  const alt = escapeAttr(badgeAlt(flag));
+  return `<a href="${href}" target="_blank" rel="noopener"><img alt="${alt}" height="${BADGE_HEIGHT}" src="${src}" width="${BADGE_WIDTH}" /></a>`;
 }

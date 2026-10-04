@@ -7,6 +7,7 @@ import { timeAgo } from '../utils/time';
 import { track } from '../utils/analytics';
 import { getTurnstileToken } from '../utils/turnstile';
 import { ShareDialog } from './ShareDialog';
+import { BadgeSnippet } from './BadgeSnippet';
 import { FlagLogo } from './FlagLogo';
 
 interface FlagPageProps {
@@ -146,6 +147,11 @@ export const FlagPage: React.FC<FlagPageProps> = ({ slug, referral, board, onBac
               ? `${formatCount(toTop)} more visit${toTop === 1 ? '' : 's'} this week takes #1.`
               : 'Holding #1. Keep sharing to stay there.'}
           </p>
+          {live.verified && (
+            <div className="mt-5">
+              <BadgeSnippet flag={live} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -163,7 +169,7 @@ export const FlagPage: React.FC<FlagPageProps> = ({ slug, referral, board, onBac
           <Plus className="w-4 h-4" /> List free
         </button>
       </div>
-      {sharing && <ShareDialog flag={live} from="flag_page" onClose={() => setSharing(false)} />}
+      {sharing && <ShareDialog flag={live} board={board} from="flag_page" onClose={() => setSharing(false)} />}
     </div>
   );
 };

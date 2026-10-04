@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Check, Copy, Loader2, Megaphone, ShieldCheck, Share2, X } from 'lucide-react';
 import type { FlagView, TargetLookup } from '../types';
+import { BadgeSnippet } from './BadgeSnippet';
 import { apiClient } from '../services/apiClient';
 import { CATEGORY_GROUPS, defaultColorFor, FLAG_COLORS, RANK_WINDOW_DAYS, referralUrl } from '../utils/rules';
 import { track } from '../utils/analytics';
@@ -16,6 +17,8 @@ export interface PlantIntent {
 
 interface PlantDialogProps {
   initial: PlantIntent;
+  /** Current ranked board, used when sharing a close race. */
+  board: FlagView[];
   onClose: () => void;
   onRules: () => void;
   onOpenFlag: (slug: string) => void;
@@ -43,7 +46,7 @@ function useCopy() {
   return { copied, copy };
 }
 
-export const PlantDialog: React.FC<PlantDialogProps> = ({ initial, onClose, onRules, onOpenFlag, onSponsor, onChanged }) => {
+export const PlantDialog: React.FC<PlantDialogProps> = ({ initial, board, onClose, onRules, onOpenFlag, onSponsor, onChanged }) => {
   const [step, setStep] = useState<Step>('target');
   const [targetInput, setTargetInput] = useState(initial.target || '');
   const [lookup, setLookup] = useState<TargetLookup | null>(null);
@@ -374,6 +377,7 @@ export const PlantDialog: React.FC<PlantDialogProps> = ({ initial, onClose, onRu
               </p>
             </div>
             <CopyRow label="Your referral link" value={link} copied={copied === 'link'} onCopy={() => copy('link', link)} />
+            {flag.verified && <BadgeSnippet flag={flag} />}
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => setSharing(true)} className="btn-primary py-2.5 text-sm">
                 <Share2 className="w-4 h-4" /> Share
@@ -399,7 +403,7 @@ export const PlantDialog: React.FC<PlantDialogProps> = ({ initial, onClose, onRu
           </div>
         )}
       </div>
-      {sharing && flag && <ShareDialog flag={flag} from="listing" onClose={() => setSharing(false)} />}
+      {sharing && flag && <ShareDialog flag={flag} board={board} from="listing" onClose={() => setSharing(false)} />}
     </ModalShell>
   );
 };

@@ -159,6 +159,51 @@ function rankPill(flag: FlagView, fontSize: number): Node {
 const flagKey = (flag: FlagView) => `${flag.slug}:${flag.rank}:${flag.visits7d}:${flag.color}:${flag.name}:${flag.tagline}:${flag.logoUrl}`;
 const weekly = (flag: FlagView) => `${formatCount(flag.visits7d)} visit${flag.visits7d === 1 ? '' : 's'} this week`;
 
+const BADGE_WIDTH = 640;
+const BADGE_HEIGHT = 120;
+
+/** Compact sticker (640×120, shown at 320×60) for a site footer. Clicks belong to the surrounding link, not this image. */
+export function renderFlagBadge(flag: FlagView) {
+  const rankLabel = flag.rank ? `#${flag.rank}` : 'New';
+  return render(
+    `badge:${flag.slug}:${flag.rank}:${flag.visits7d}`,
+    async () =>
+      h(
+        'div',
+        {
+          width: '100%',
+          height: '100%',
+          backgroundColor: PAGE,
+          fontFamily: 'Poppins',
+          alignItems: 'center',
+          padding: '12px 18px',
+          border: `4px solid ${LINE}`,
+          borderRadius: 28,
+        },
+        h(
+          'div',
+          {
+            background: flag.rank === 1 ? ACCENT : ACCENT_SOFT,
+            color: flag.rank === 1 ? '#FFFFFF' : ACCENT,
+            borderRadius: 18,
+            padding: '8px 16px',
+            fontSize: rankLabel.length >= 4 ? 32 : 40,
+            fontWeight: 700,
+          },
+          rankLabel
+        ),
+        h(
+          'div',
+          { flexDirection: 'column', marginLeft: 18, justifyContent: 'center' },
+          wordmark(26),
+          h('div', { fontSize: 22, color: MUTED, marginTop: 2 }, weekly(flag))
+        )
+      ),
+    BADGE_WIDTH,
+    BADGE_HEIGHT
+  );
+}
+
 /** Landscape card (1200×630) for link previews, X, LinkedIn and Facebook. */
 export function renderFlagOg(flag: FlagView) {
   return render(`flag:${flagKey(flag)}`, async () => {

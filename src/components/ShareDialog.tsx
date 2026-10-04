@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Check, Copy, Download, Image as ImageIcon, Loader2, Share2, X } from 'lucide-react';
 import type { FlagView } from '../types';
 import { track } from '../utils/analytics';
-import { referralUrl } from '../utils/rules';
+import { formatCount, referralUrl, rivalAbove } from '../utils/rules';
 import { ModalShell } from './ModalShell';
 
 type Format = 'landscape' | 'story';
@@ -13,8 +13,14 @@ const FORMATS: { id: Format; label: string; hint: string }[] = [
   { id: 'story', label: 'Vertical', hint: '1080×1920 · Instagram & WhatsApp stories' },
 ];
 
-function shareText(name: string, rank: number): string {
+function shareText(flag: FlagView, board: FlagView[]): string {
+  const { name, rank } = flag;
   if (rank === 1) return `${name} is #1 on FreeBids. Every visit through this link keeps it there.`;
+  const rival = rivalAbove(board, flag);
+  if (rival) {
+    const noun = rival.visits === 1 ? 'visit' : 'visits';
+    return `${name} is #${rank} on FreeBids, ${formatCount(rival.visits)} ${noun} behind ${rival.name}. Every visit through this link moves it up.`;
+  }
   if (rank > 1) return `${name} is #${rank} on FreeBids. Every visit through this link moves it up.`;
   return `${name} just joined FreeBids. Every visit through this link moves it up.`;
 }
@@ -45,18 +51,20 @@ async function fetchPng(src: string): Promise<Blob> {
 
 interface ShareDialogProps {
   flag: FlagView;
+  /** Ranked board, so the share text can name the listing directly above. */
+  board?: FlagView[];
   from: string;
   onClose: () => void;
 }
 
-export const ShareDialog: React.FC<ShareDialogProps> = ({ flag, from, onClose }) => {
+export const ShareDialog: React.FC<ShareDialogProps> = ({ flag, board = [], from, onClose }) => {
   const [format, setFormat] = useState<Format>('landscape');
   const [loaded, setLoaded] = useState<Record<string, boolean>>({});
   const [status, setStatus] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   const url = referralUrl(flag.slug);
-  const text = shareText(flag.name, flag.rank);
+  const text = shareText(flag, board);
   const version = `${flag.rank}-${flag.visits7d}`;
   const src = format === 'story' ? `/og/flag/${flag.slug}/story.png?v=${version}` : `/og/flag/${flag.slug}.png?v=${version}`;
   const fileName = `${flag.slug}-freebids-${format === 'story' ? 'vertical' : 'horizontal'}.png`;

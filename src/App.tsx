@@ -155,6 +155,7 @@ export default function App() {
       {plant && (
         <PlantDialog
           initial={plant}
+          board={flags}
           onClose={() => setPlant(null)}
           onChanged={() => refresh(true)}
           onOpenFlag={(slug) => {
