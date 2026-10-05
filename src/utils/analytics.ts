@@ -9,14 +9,15 @@ const DATAFAST_ID = import.meta.env.VITE_DATAFAST_ID as string | undefined;
 /** Public DataFast dashboard; the header "stats" link is hidden when unset. */
 export const DATAFAST_SHARE_URL = (import.meta.env.VITE_DATAFAST_SHARE_URL as string | undefined) || null;
 
-/** Injects the DataFast tracker when VITE_DATAFAST_ID is set. */
+/** Injects the DataFast tracker when VITE_DATAFAST_ID is set and the page has no DataFast script yet. */
 export function loadDatafast() {
   if (!DATAFAST_ID || typeof document === 'undefined') return;
+  if (document.querySelector('script[src*="datafa.st"]')) return;
   const s = document.createElement('script');
   s.defer = true;
-  s.src = 'https://datafa.st/js/script.js';
+  s.src = 'https://datafa.st/js/script.cookieless.js';
   s.dataset.websiteId = DATAFAST_ID;
-  s.dataset.domain = window.location.hostname.replace(/^www\./, '');
+  s.dataset.domain = 'www.freebids.lol';
   document.head.appendChild(s);
 }
 

@@ -163,7 +163,7 @@ const DOCS: Record<LegalDoc, { title: string; intro: string; sections: Section[]
       {
         heading: 'Who we share it with',
         body: [
-          'Our payment provider (for sponsorships), Cloudflare (bot checks), Supabase (database), Vercel (hosting and basic analytics) and PostHog (product analytics). Each processes data only to provide its service to us. We do not sell your data.',
+          'Our payment provider (for sponsorships), Cloudflare (bot checks), Supabase (database), Vercel (hosting and basic analytics), PostHog (product analytics) and DataFast (cookieless traffic counts). Each processes data only to provide its service to us. We do not sell your data.',
         ],
       },
       {
