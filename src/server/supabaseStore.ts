@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { AdEventKind, compareBoard, FlagPatch, FlagRecord, FlagStore, NewFlag, utcDay } from './store.js';
 
 const FLAG_COLUMNS =
-  'id, slug, target_key, target_kind, url, name, tagline, category, color, logo_url, clicks, hidden, verified_at, verify_token, owner_email, ad_balance_micros, ad_funded_micros, ad_spent_micros, ad_views, ad_clicks, created_at';
+  'id, slug, target_key, target_kind, url, name, tagline, category, color, logo_url, clicks, hidden, verified_at, verify_token, owner_email, unclaimed, ad_balance_micros, ad_funded_micros, ad_spent_micros, ad_views, ad_clicks, created_at';
 const BOARD_LIMIT = 2000;
 
 function toFlag(r: any, visits7d = 0): FlagRecord {
@@ -23,6 +23,7 @@ function toFlag(r: any, visits7d = 0): FlagRecord {
     verifiedAt: r.verified_at,
     verifyToken: r.verify_token,
     ownerEmail: r.owner_email,
+    unclaimed: Boolean(r.unclaimed),
     adBalanceMicros: Number(r.ad_balance_micros || 0),
     adFundedMicros: Number(r.ad_funded_micros || 0),
     adSpentMicros: Number(r.ad_spent_micros || 0),
@@ -50,6 +51,20 @@ export class SupabaseStore implements FlagStore {
     ]);
     const visits = new Map<string, number>(((week as any[]) || []).map((w) => [w.flag_id, Number(w.visits_7d)]));
     return ((rows as any[]) || []).map((r) => toFlag(r, visits.get(r.id) ?? 0)).sort(compareBoard);
+  }
+
+  async listUnclaimed(limit: number) {
+    const rows = check(
+      await this.db
+        .from('flags')
+        .select(FLAG_COLUMNS)
+        .eq('unclaimed', true)
+        .eq('hidden', false)
+        .is('verified_at', null)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+    );
+    return ((rows as any[]) || []).map((r) => toFlag(r));
   }
 
   async getFlagByKey(targetKey: string) {
@@ -80,6 +95,7 @@ export class SupabaseStore implements FlagStore {
           logo_url: input.logoUrl,
           owner_email: input.ownerEmail,
           verify_token: input.verifyToken,
+          unclaimed: Boolean(input.unclaimed),
         })
         .select(FLAG_COLUMNS)
         .single()
@@ -104,7 +120,7 @@ export class SupabaseStore implements FlagStore {
     const row = check(
       await this.db
         .from('flags')
-        .update({ verified_at: verified ? now : null, updated_at: now })
+        .update(verified ? { verified_at: now, unclaimed: false, updated_at: now } : { verified_at: null, updated_at: now })
         .eq('id', id)
         .select(FLAG_COLUMNS)
         .maybeSingle()

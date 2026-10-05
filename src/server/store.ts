@@ -16,6 +16,8 @@ export interface FlagRecord {
   verifiedAt: string | null;
   verifyToken: string | null;
   ownerEmail: string | null;
+  /** Added by the operator, not the owner. Never ranked; cleared once the owner verifies. */
+  unclaimed: boolean;
   /** Prepaid Sponsored-strip credit and its lifetime totals, in micro-dollars. */
   adBalanceMicros: number;
   adFundedMicros: number;
@@ -39,6 +41,7 @@ export interface NewFlag {
   logoUrl: string | null;
   ownerEmail: string | null;
   verifyToken: string;
+  unclaimed?: boolean;
 }
 
 export type FlagPatch = Partial<Pick<FlagRecord, 'name' | 'tagline' | 'category' | 'color' | 'hidden'>>;
@@ -48,11 +51,14 @@ export type AdEventKind = 'view' | 'click';
 export interface FlagStore {
   /** Ranked flags in board order: verified and not hidden. `includeHidden` returns every flag. */
   listFlags(opts?: { includeHidden?: boolean }): Promise<FlagRecord[]>;
+  /** Unclaimed, unverified and not hidden, newest first. */
+  listUnclaimed(limit: number): Promise<FlagRecord[]>;
   getFlagByKey(targetKey: string): Promise<FlagRecord | null>;
   getFlagBySlug(slug: string): Promise<FlagRecord | null>;
   /** Inserts an unverified flag. A taken slug gets a short suffix. */
   createFlag(input: NewFlag): Promise<FlagRecord>;
   updateFlag(id: string, patch: FlagPatch): Promise<FlagRecord | null>;
+  /** Verifying also clears `unclaimed`. */
   setVerified(id: string, verified: boolean): Promise<FlagRecord | null>;
 
   /** Returns true when the visit counted; false when this visitor or IP already counted for the flag within VISIT_WINDOW_HOURS. */

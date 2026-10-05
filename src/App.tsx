@@ -9,6 +9,7 @@ import { Footer } from './components/Footer';
 import { CategoryChips } from './components/CategoryChips';
 import { Hero } from './components/Hero';
 import { Board } from './components/Board';
+import { UnclaimedList } from './components/UnclaimedList';
 import { SideRail } from './components/SideRail';
 import { HowItWorks } from './components/HowItWorks';
 import { FlagPage } from './components/FlagPage';
@@ -87,6 +88,7 @@ export default function App() {
 
   const flags = board?.flags || [];
   const sponsored = board?.sponsored || [];
+  const unclaimed = board?.unclaimed || [];
   const openFlag = (slug: string) => navigate(`/flag/${slug}`);
   const openPlant = (intent: PlantIntent = {}) => setPlant(intent);
 
@@ -117,7 +119,7 @@ export default function App() {
         board={flags}
         onBack={() => navigate('/')}
         onSponsor={setSponsor}
-        onPlant={() => openPlant()}
+        onPlant={openPlant}
         onVisitCounted={() => refresh(true)}
       />
     );
@@ -129,7 +131,10 @@ export default function App() {
         <CategoryChips flags={flags} selected={category} onSelect={setCategory} />
         <Hero flags={flags} onPlant={openPlant} />
         <div className="max-w-6xl mx-auto px-4 grid gap-8 md:grid-cols-[minmax(0,1fr)_15rem] lg:grid-cols-[minmax(0,1fr)_17rem]">
-          <Board flags={flags} loading={loading} category={category} query={query} onOpen={openFlag} onPlant={openPlant} />
+          <div className="min-w-0">
+            <Board flags={flags} loading={loading} category={category} query={query} onOpen={openFlag} onPlant={openPlant} />
+            <UnclaimedList flags={unclaimed} onOpen={openFlag} onPlant={openPlant} />
+          </div>
           <SideRail flags={flags} sponsored={sponsored} onOpen={openFlag} onSponsor={() => setSponsor(null)} />
         </div>
         <HowItWorks onRules={() => navigate('/rules')} />

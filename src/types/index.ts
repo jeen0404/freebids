@@ -18,6 +18,8 @@ export interface FlagView {
   visits7d: number;
   clicks: number;
   verified: boolean;
+  /** Added by the operator from a public launch board; the owner has not claimed it yet. */
+  unclaimed: boolean;
   /** Has ad credit, so it shows in the Sponsored strip. Never affects rank. */
   sponsored: boolean;
   createdAt: string;
@@ -36,6 +38,8 @@ export interface BoardStats {
 export interface BoardSnapshot {
   flags: FlagView[];
   sponsored: FlagView[];
+  /** Not ranked and not counted in stats. */
+  unclaimed: FlagView[];
   stats: BoardStats;
   generatedAt: string;
 }

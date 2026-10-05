@@ -43,6 +43,7 @@ export class JsonStore implements FlagStore {
         for (const key of Object.keys(this.data) as (keyof JsonData)[]) {
           if (Array.isArray(saved[key]) || (key === 'today' && saved.today?.day)) (this.data as any)[key] = saved[key];
         }
+        for (const f of this.data.flags) f.unclaimed = Boolean(f.unclaimed);
       } catch (err: any) {
         console.warn('[json-store] could not read ledger, starting empty:', err.message);
       }
@@ -68,6 +69,14 @@ export class JsonStore implements FlagStore {
       .filter((f) => opts.includeHidden || (!f.hidden && f.verifiedAt))
       .map((f) => ({ ...f, visits7d: counts.get(f.id) ?? 0 }))
       .sort(compareBoard);
+  }
+
+  async listUnclaimed(limit: number) {
+    return this.data.flags
+      .filter((f) => f.unclaimed && !f.hidden && !f.verifiedAt)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit)
+      .map((f) => ({ ...f, visits7d: 0 }));
   }
 
   async getFlagByKey(targetKey: string) {
@@ -99,6 +108,7 @@ export class JsonStore implements FlagStore {
       verifiedAt: null,
       verifyToken: input.verifyToken,
       ownerEmail: input.ownerEmail,
+      unclaimed: Boolean(input.unclaimed),
       adBalanceMicros: 0,
       adFundedMicros: 0,
       adSpentMicros: 0,
@@ -124,6 +134,7 @@ export class JsonStore implements FlagStore {
     const flag = this.data.flags.find((f) => f.id === id);
     if (!flag) return null;
     flag.verifiedAt = verified ? new Date().toISOString() : null;
+    if (verified) flag.unclaimed = false;
     this.save();
     return { ...flag };
   }

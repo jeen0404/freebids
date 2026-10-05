@@ -40,7 +40,8 @@ export async function resolveSeo(pathname: string): Promise<SeoMeta> {
         description: `${flag.name}${flag.tagline ? ` – ${flag.tagline}` : ''}. ${view.visits7d.toLocaleString('en-US')} visits this week on the FreeBids board. Every visit through this link moves it up.`,
         path: `/flag/${flag.slug}`,
         image: `/og/flag/${flag.slug}.png?v=${version(view.rank, view.visits7d)}`,
-        noindex: flagMatch[1].toLowerCase() === 'f',
+        // Unclaimed pages carry someone else's brand without their consent, so search engines skip them.
+        noindex: flagMatch[1].toLowerCase() === 'f' || view.unclaimed,
       };
     }
     if (pathname === '/' || pathname === '') {

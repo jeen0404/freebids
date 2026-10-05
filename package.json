@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "og:default": "tsx scripts/render-default-og.ts"
+    "og:default": "tsx scripts/render-default-og.ts",
+    "seed:unclaimed": "tsx scripts/seed-unclaimed.ts"
   },
   "dependencies": {
     "@fontsource/poppins": "^5.3.0",

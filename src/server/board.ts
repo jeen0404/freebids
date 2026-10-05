@@ -4,10 +4,12 @@ import { onlineCount } from './presence.js';
 import { FlagRecord, isSponsored } from './store.js';
 
 const BOARD_TTL_MS = 30_000;
+const UNCLAIMED_LIMIT = 60;
 
 interface Board {
   records: FlagRecord[];
   views: FlagView[];
+  unclaimed: FlagView[];
   visitors: number;
   visitorsToday: number;
   at: number;
@@ -40,6 +42,7 @@ function toFlagView(rec: FlagRecord, rank: number, visits7d = rec.visits7d): Fla
     visits7d,
     clicks: rec.clicks,
     verified: Boolean(rec.verifiedAt),
+    unclaimed: rec.unclaimed && !rec.verifiedAt,
     sponsored: isSponsored(rec),
     createdAt: rec.createdAt,
   };
@@ -49,10 +52,16 @@ export async function getBoard(): Promise<Board> {
   if (cached && Date.now() - cached.at < BOARD_TTL_MS) return cached;
   if (inflight) return inflight;
   inflight = (async () => {
-    const [records, visitors, visitorsToday] = await Promise.all([store.listFlags(), store.getVisitorCount(), store.getVisitorsToday()]);
+    const [records, unclaimed, visitors, visitorsToday] = await Promise.all([
+      store.listFlags(),
+      store.listUnclaimed(UNCLAIMED_LIMIT),
+      store.getVisitorCount(),
+      store.getVisitorsToday(),
+    ]);
     const board: Board = {
       records,
       views: records.map((r, i) => toFlagView(r, i + 1)),
+      unclaimed: unclaimed.map((r) => toFlagView(r, 0, 0)),
       visitors,
       visitorsToday,
       at: Date.now(),
@@ -92,6 +101,7 @@ export async function getSnapshot(): Promise<BoardSnapshot> {
   return {
     flags: board.views,
     sponsored: activeSponsors(board).map((r) => byId.get(r.id)!),
+    unclaimed: board.unclaimed,
     stats: {
       flags: board.views.length,
       weeklyVisits: board.views.reduce((sum, f) => sum + f.visits7d, 0),

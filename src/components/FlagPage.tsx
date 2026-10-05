@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowUpRight, Check, Copy, Megaphone, Plus, Share2 } from 'lucide-react';
 import type { FlagView } from '../types';
+import type { PlantIntent } from './PlantDialog';
 import { apiClient } from '../services/apiClient';
 import { formatCount, RANK_WINDOW_DAYS, referralUrl, visitsToReachRank } from '../utils/rules';
 import { timeAgo } from '../utils/time';
@@ -17,7 +18,7 @@ interface FlagPageProps {
   board: FlagView[];
   onBack: () => void;
   onSponsor: (flag: FlagView) => void;
-  onPlant: () => void;
+  onPlant: (intent?: PlantIntent) => void;
   onVisitCounted: () => void;
 }
 
@@ -94,7 +95,11 @@ export const FlagPage: React.FC<FlagPageProps> = ({ slug, referral, board, onBac
           <FlagLogo name={flag.name} color={flag.color} logoUrl={flag.logoUrl} size={80} />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-              {live.rank ? <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-accent">#{live.rank}</span> : <span className="text-muted">Waiting for verification</span>}
+              {live.rank ? (
+                <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-accent">#{live.rank}</span>
+              ) : (
+                <span className="text-muted">{flag.unclaimed ? 'Not claimed yet · not ranked' : 'Waiting for verification'}</span>
+              )}
               {live.sponsored && <span className="rounded-full bg-raised px-2.5 py-0.5 text-muted">Sponsored</span>}
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink mt-1.5">{flag.name}</h1>
@@ -134,25 +139,43 @@ export const FlagPage: React.FC<FlagPageProps> = ({ slug, referral, board, onBac
           )}
         </div>
 
-        <div className="mt-6 border-t border-line pt-5">
-          <div className="label-sm">Share this link. Every visit through it moves {flag.name} up.</div>
-          <div className="flex gap-2 mt-2">
-            <input readOnly value={link} onFocus={(e) => e.currentTarget.select()} className="input min-w-0 flex-1 py-2 text-sm" />
-            <button onClick={copyLink} className="btn-primary shrink-0 px-4 text-sm">
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? 'Copied' : 'Copy'}
+        {flag.unclaimed ? (
+          <div className="mt-6 border-t border-line pt-5">
+            <div className="label-sm">Is {flag.name} yours?</div>
+            <p className="text-sm text-muted mt-1 leading-relaxed">
+              We added it from a public launch board. Claim it free to get your own link and start ranking on the board.
+            </p>
+            <button
+              onClick={() => {
+                track('claim_clicked', { slug: flag.slug, from: 'flag_page' });
+                onPlant({ target: flag.label });
+              }}
+              className="btn-primary mt-3 px-4 py-2.5 text-sm"
+            >
+              Claim {flag.name}
             </button>
           </div>
-          <p className="text-xs text-muted mt-2">
-            {toTop > 0
-              ? `${formatCount(toTop)} more visit${toTop === 1 ? '' : 's'} this week takes #1.`
-              : 'Holding #1. Keep sharing to stay there.'}
-          </p>
-          {live.verified && (
-            <div className="mt-5">
-              <BadgeSnippet flag={live} />
+        ) : (
+          <div className="mt-6 border-t border-line pt-5">
+            <div className="label-sm">Share this link. Every visit through it moves {flag.name} up.</div>
+            <div className="flex gap-2 mt-2">
+              <input readOnly value={link} onFocus={(e) => e.currentTarget.select()} className="input min-w-0 flex-1 py-2 text-sm" />
+              <button onClick={copyLink} className="btn-primary shrink-0 px-4 text-sm">
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? 'Copied' : 'Copy'}
+              </button>
             </div>
-          )}
-        </div>
+            <p className="text-xs text-muted mt-2">
+              {toTop > 0
+                ? `${formatCount(toTop)} more visit${toTop === 1 ? '' : 's'} this week takes #1.`
+                : 'Holding #1. Keep sharing to stay there.'}
+            </p>
+            {live.verified && (
+              <div className="mt-5">
+                <BadgeSnippet flag={live} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mt-4 rounded-3xl bg-accent-soft px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -165,7 +188,7 @@ export const FlagPage: React.FC<FlagPageProps> = ({ slug, referral, board, onBac
             'Have a business? List it free and climb with your own link.'
           )}
         </p>
-        <button onClick={onPlant} className="btn-primary px-4 py-2.5 text-sm shrink-0">
+        <button onClick={() => onPlant()} className="btn-primary px-4 py-2.5 text-sm shrink-0">
           <Plus className="w-4 h-4" /> List free
         </button>
       </div>
