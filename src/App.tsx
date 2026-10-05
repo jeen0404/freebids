@@ -1,4 +1,6 @@
 import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import type { BoardSnapshot, FlagView } from './types';
 import { apiClient, getVisitorId } from './services/apiClient';
 import { initAnalytics, trackPageview } from './utils/analytics';
@@ -151,6 +153,8 @@ export default function App() {
         <Suspense fallback={<div className="min-h-[60vh]" />}>{page}</Suspense>
       </main>
       <Footer onNavigate={navigate} onSponsor={() => setSponsor(null)} />
+      <Analytics path={path} route={path} />
+      <SpeedInsights route={path} />
 
       {plant && (
         <PlantDialog

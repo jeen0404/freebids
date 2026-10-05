@@ -1,7 +1,5 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 import App from './App.tsx';
 import { loadDatafast } from './utils/analytics';
 import '@fontsource/poppins/400.css';
@@ -15,7 +13,5 @@ loadDatafast();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
-    <Analytics />
-    <SpeedInsights />
   </StrictMode>,
 );

@@ -29,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSponsor }) => {
             <a href="/privacy" onClick={link('/privacy')} className={linkClass}>Privacy</a>
             <a href="/refunds" onClick={link('/refunds')} className={linkClass}>Refunds</a>
             <button onClick={onSponsor} className={`${linkClass} cursor-pointer`}>Sponsor</button>
-            <a href={`mailto:${BUSINESS.email}`} className={linkClass}>Contact</a>
+            <a href={`mailto:${BUSINESS.email}`} className={linkClass}>{BUSINESS.email}</a>
           </div>
         </div>
         <div className="pt-6 border-t border-line text-[11px] text-dim leading-relaxed">

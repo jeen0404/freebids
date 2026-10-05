@@ -79,7 +79,7 @@ const DOCS: Record<LegalDoc, { title: string; intro: string; sections: Section[]
       {
         heading: 'Moderation',
         body: [
-          'We can take down a listing that breaks these rules, including after it goes live. Email us to correct a mistake in your listing\'s name, tagline, category or color.',
+          `We can take down a listing that breaks these rules, including after it goes live. Email ${CONTACT_EMAIL} to correct a mistake in your listing's name, tagline, category or color.`,
         ],
       },
     ],
@@ -194,7 +194,7 @@ const DOCS: Record<LegalDoc, { title: string; intro: string; sections: Section[]
       },
       {
         heading: 'Disputes',
-        body: ['Please contact us before filing a card dispute; we respond within 48 hours. A disputed sponsorship ends immediately.'],
+        body: [`Please email ${CONTACT_EMAIL} before filing a card dispute; we respond within 48 hours. A disputed sponsorship ends immediately.`],
       },
     ],
   },

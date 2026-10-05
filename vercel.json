@@ -11,7 +11,7 @@
       "includeFiles": "{public/og-default.png,node_modules/@fontsource/*/files/*-latin-[47]00-normal.woff,node_modules/harfbuzzjs/*.wasm,node_modules/satori/*.wasm,node_modules/@resvg/resvg-js-linux-x64-gnu/**}"
     }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "rewrites": [{ "source": "/((?!_vercel/).*)", "destination": "/api" }],
   "headers": [
     {
       "source": "/assets/(.*)",
