@@ -6,8 +6,9 @@ const POSTHOG_HOST = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) |
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
 const FIRST_TOUCH_KEY = 'fc_first_touch';
 const DATAFAST_ID = import.meta.env.VITE_DATAFAST_ID as string | undefined;
-/** Public DataFast dashboard; the header "stats" link is hidden when unset. */
-export const DATAFAST_SHARE_URL = (import.meta.env.VITE_DATAFAST_SHARE_URL as string | undefined) || null;
+/** Public DataFast dashboard linked from the online pill. */
+export const DATAFAST_SHARE_URL =
+  (import.meta.env.VITE_DATAFAST_SHARE_URL as string | undefined) || 'https://datafa.st/share/6ac33b90d07575c1f4ab6134';
 
 /** Injects the DataFast tracker when VITE_DATAFAST_ID is set and the page has no DataFast script yet. */
 export function loadDatafast() {
